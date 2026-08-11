@@ -64,8 +64,30 @@ class RequestsHttpClient:
             response = request_call()
             response.raise_for_status()
             return response.text
+        except requests.HTTPError as exception:
+            raise self._build_http_status_error(method, url, exception) from exception
         except requests.RequestException as exception:
             raise ExternalServiceError(
                 f"HTTP {method} failed for url={url!r}; "
                 "expected a successful 2xx response."
             ) from exception
+
+    def _build_http_status_error(
+        self,
+        method: str,
+        url: str,
+        exception: requests.HTTPError,
+    ) -> ExternalServiceError:
+        response = exception.response
+        if response is None:
+            return ExternalServiceError(
+                f"HTTP {method} failed for url={url!r}; "
+                "status=unknown; expected a successful 2xx response."
+            )
+
+        return ExternalServiceError(
+            f"HTTP {method} failed for url={url!r}; "
+            f"status={response.status_code}; "
+            f"response={response.text[:1000]!r}; "
+            "expected a successful 2xx response."
+        )
