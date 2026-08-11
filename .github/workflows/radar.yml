@@ -1,0 +1,52 @@
+name: Radar UFERSA
+
+on:
+  schedule:
+    - cron: "17 8 * * *"
+      timezone: "America/Fortaleza"
+  workflow_dispatch:
+    inputs:
+      notify_existing:
+        description: "Notificar também oportunidades já existentes"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install -e .
+
+      - name: Run radar
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NOTIFY_EXISTING: ${{ inputs.notify_existing }}
+        run: |
+          if [ "$NOTIFY_EXISTING" = "true" ]; then
+            python -m radar_ufersa --notify-existing
+          else
+            python -m radar_ufersa
+          fi
+
+      # State is intentionally versioned: it is transparent, durable, and needs no database.
+      - name: Persist state
+        if: always()
+        run: |
+          if git diff --quiet -- state.json; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          git commit -m "chore: update radar state"
+          git push

@@ -1,0 +1,157 @@
+# Radar UFERSA
+
+Monitor pessoal de oportunidades da UFERSA. Uma execução consulta páginas oficiais,
+extrai links, calcula relevância pelo título, ignora itens já vistos e envia novas
+oportunidades pelo Telegram.
+
+## O que o V1 monitora
+
+- PROGEPE — editais de capacitação e seleção interna.
+- PROPPG — editais anuais de pesquisa e pós-graduação.
+- PROEC — editais anuais de extensão e cultura.
+- Unidade Correcional — chamadas e banco de servidores.
+- Assecom — notícias institucionais recentes.
+- CPPS — processos seletivos centralizados, com penalidades para reduzir ruído externo.
+- Portarias da Reitoria — sinais de comissões e atividades institucionais.
+- Portarias da PROGRAD — sinais de comissões e atividades acadêmico-administrativas.
+
+As URLs anuais são montadas automaticamente com o ano corrente em
+`America/Fortaleza`.
+
+## Como funciona
+
+```text
+UFERSA -> HTTP -> links -> filtro/pontuação -> state.json -> Telegram
+```
+
+O filtro usa palavras-chave positivas e negativas. Exemplos de sinais fortes:
+`banco de servidores`, `comissão`, `grupo de trabalho`, `bolsa`, `projeto`,
+`extensão`, `tutor`, `instrutor`, `formador` e `fiscal de contrato`.
+
+Resultados, homologações e processos claramente voltados a discentes ou concursos
+externos recebem penalidade para reduzir ruído.
+
+## Primeira execução
+
+Por segurança, a primeira execução cria uma **baseline**: os itens relevantes que já
+existem são gravados em `state.json`, mas não são enviados. A partir da execução
+seguinte, apenas itens novos geram alertas.
+
+Para testar enviando também os itens existentes:
+
+```bash
+python -m radar_ufersa --notify-existing
+```
+
+## Instalação local
+
+Requer Python 3.12+.
+
+```bash
+python -m venv .venv
+```
+
+PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+$env:TELEGRAM_TOKEN="SEU_TOKEN"
+$env:TELEGRAM_CHAT_ID="SEU_CHAT_ID"
+python -m radar_ufersa
+```
+
+Linux/macOS:
+
+```bash
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
+export TELEGRAM_TOKEN="SEU_TOKEN"
+export TELEGRAM_CHAT_ID="SEU_CHAT_ID"
+python -m radar_ufersa
+```
+
+## Criando o bot do Telegram
+
+1. Abra uma conversa com `@BotFather` no Telegram.
+2. Execute `/newbot` e copie o token fornecido.
+3. Abra uma conversa com o novo bot e envie `/start`.
+4. Consulte `getUpdates` da Bot API e localize `message.chat.id`.
+5. Use esses valores em `TELEGRAM_TOKEN` e `TELEGRAM_CHAT_ID`.
+
+Exemplo para consultar as atualizações:
+
+```text
+https://api.telegram.org/bot<SEU_TOKEN>/getUpdates
+```
+
+Nunca grave o token real no repositório.
+
+## GitHub Actions
+
+Crie um repositório, envie este projeto e configure dois *Actions secrets*:
+
+- `TELEGRAM_TOKEN`
+- `TELEGRAM_CHAT_ID`
+
+O workflow `.github/workflows/radar.yml` executa diariamente às 08:17 no fuso
+`America/Fortaleza`. O minuto 17 evita concentrar a execução exatamente no início
+da hora.
+
+O `state.json` é atualizado por um commit automático. Por isso o workflow recebe
+`contents: write`. Se a branch padrão bloquear pushes diretos, autorize o bot ou
+adapte a regra de proteção.
+
+Também é possível executar manualmente em **Actions > Radar UFERSA > Run workflow**.
+A opção `notify_existing` permite receber os itens atuais para teste.
+
+Prefira um repositório privado para esse monitor. Em repositórios públicos, workflows
+agendados podem ser desativados pelo GitHub após 60 dias sem atividade no repositório.
+
+## Testes
+
+Instale as dependências de desenvolvimento e execute um único comando:
+
+```bash
+pytest
+```
+
+As integrações externas são substituídas por fakes nomeados nos testes. O adaptador
+de filesystem também possui um teste rápido usando diretório temporário.
+
+## Formatação
+
+```bash
+black .
+```
+
+## Estrutura
+
+```text
+src/radar_ufersa/
+├── adapters/             # requests, BeautifulSoup, filesystem e saída de texto
+├── cli.py                # argumentos e variáveis de ambiente
+├── collector.py          # coleta tolerante a falhas por fonte
+├── identity.py           # fingerprint dos itens
+├── logging_json.py       # logs estruturados JSON
+├── models.py             # tipos do domínio
+├── notification.py       # mensagem e envio ao Telegram
+├── ports.py              # interfaces próprias do projeto
+├── relevance.py          # regras de pontuação
+├── service.py            # fluxo da execução diária
+├── sources.py            # catálogo oficial monitorado
+└── state.py              # persistência JSON
+```
+
+## Limitações intencionais do V1
+
+- Não baixa nem interpreta PDFs.
+- Classifica principalmente pelo texto visível dos links/títulos.
+- Não usa IA.
+- Não usa Selenium/Playwright.
+- Não possui banco de dados ou frontend.
+- Uma oportunidade descrita apenas dentro de um PDF pode passar despercebida.
+
+A evolução natural do V2 é extrair o texto do edital/PDF apenas para itens novos e
+produzir um resumo com público-alvo, prazo, bolsa, requisitos e possível relação com
+RSC.
