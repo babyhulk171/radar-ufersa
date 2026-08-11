@@ -47,8 +47,9 @@ class TelegramOpportunityNotifier:
         try:
             self._http_client.post_form(endpoint, form)
         except ExternalServiceError as exception:
+            safe_cause = str(exception).replace(self._token, "***")
             raise ExternalServiceError(
                 f"Telegram send failed for chat_id={self._chat_id!r}; "
-                f"cause={exception}; "
+                f"cause={safe_cause}; "
                 "expected Bot API sendMessage success."
-            ) from exception
+            ) from None
