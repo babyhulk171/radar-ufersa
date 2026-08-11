@@ -71,22 +71,6 @@ export TELEGRAM_CHAT_ID="SEU_CHAT_ID"
 python -m radar_ufersa
 ```
 
-## Criando o bot do Telegram
-
-1. Abra uma conversa com `@BotFather` no Telegram.
-2. Execute `/newbot` e copie o token fornecido.
-3. Abra uma conversa com o novo bot e envie `/start`.
-4. Consulte `getUpdates` da Bot API e localize `message.chat.id`.
-5. Use esses valores em `TELEGRAM_TOKEN` e `TELEGRAM_CHAT_ID`.
-
-Exemplo para consultar as atualizações:
-
-```text
-https://api.telegram.org/bot<SEU_TOKEN>/getUpdates
-```
-
-Nunca grave o token real no repositório.
-
 ## GitHub Actions
 
 Crie um repositório, envie este projeto e configure dois *Actions secrets*:
