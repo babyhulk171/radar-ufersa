@@ -1,0 +1,6 @@
+beautifulsoup4<5,>=4.12
+requests<3,>=2.32
+
+[dev]
+black<27,>=24
+pytest<10,>=8

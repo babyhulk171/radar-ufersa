@@ -31,9 +31,7 @@ def test_extract_uses_entry_content_when_main_is_absent() -> None:
 
     anchors = extractor.extract("https://ufersa.edu.br/pagina/", html)
 
-    assert anchors == (
-        anchors[0],
-    )
+    assert anchors == (anchors[0],)
     assert anchors[0].url == "https://ufersa.edu.br/pagina/arquivo.pdf"
     assert anchors[0].title == "Arquivo PDF"
 
@@ -47,7 +45,9 @@ def test_extract_uses_table_row_context_for_generic_consultar_link() -> None:
     """
     extractor = BeautifulSoupAnchorExtractor()
 
-    anchors = extractor.extract("https://sistemas.ufersa.edu.br/concursos/publico", html)
+    anchors = extractor.extract(
+        "https://sistemas.ufersa.edu.br/concursos/publico", html
+    )
 
     assert len(anchors) == 1
     assert "Servidores Técnico-Administrativos" in anchors[0].title

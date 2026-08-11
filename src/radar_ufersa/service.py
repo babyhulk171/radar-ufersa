@@ -51,8 +51,12 @@ class RadarService:
         sent, failed, updated_state = self._notify_new(unique_relevant, previous_state)
         self._state_store.save(updated_state)
         return RunSummary(
-            len(collection.candidates), len(unique_relevant), sent, failed,
-            collection.failed_sources, False,
+            len(collection.candidates),
+            len(unique_relevant),
+            sent,
+            failed,
+            collection.failed_sources,
+            False,
         )
 
     def _score_relevant(
@@ -107,7 +111,7 @@ class RadarService:
             fingerprints.add(fingerprint)
             sent += 1
 
-            time.sleep(1.1);
+            time.sleep(1.1)
         return sent, failed, SeenState(True, frozenset(fingerprints))
 
     def _try_notify(self, opportunity: ScoredOpportunity) -> bool:

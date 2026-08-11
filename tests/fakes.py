@@ -52,9 +52,7 @@ class FakeRadarLogger:
     def __init__(self) -> None:
         self.events: list[tuple[str, str, Mapping[str, JsonScalar]]] = []
 
-    def write(
-        self, level: str, event: str, fields: Mapping[str, JsonScalar]
-    ) -> None:
+    def write(self, level: str, event: str, fields: Mapping[str, JsonScalar]) -> None:
         self.events.append((level, event, fields))
 
 
