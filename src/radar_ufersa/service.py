@@ -1,3 +1,4 @@
+import time
 from radar_ufersa.errors import ExternalServiceError
 from radar_ufersa.identity import build_candidate_fingerprint
 from radar_ufersa.models import (
@@ -105,6 +106,8 @@ class RadarService:
                 continue
             fingerprints.add(fingerprint)
             sent += 1
+
+            time.sleep(1.1);
         return sent, failed, SeenState(True, frozenset(fingerprints))
 
     def _try_notify(self, opportunity: ScoredOpportunity) -> bool:
