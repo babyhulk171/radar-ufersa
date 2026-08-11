@@ -22,6 +22,7 @@ DEFAULT_RELEVANCE_RULES: tuple[RelevanceRule, ...] = (
     RelevanceRule("processo seletivo", 3, OpportunityCategory.SELECTION),
     RelevanceRule("credenciamento", 4, OpportunityCategory.SELECTION),
     RelevanceRule("edital", 2, OpportunityCategory.SELECTION),
+    RelevanceRule("mestrado", 5, OpportunityCategory.SELECTION),
     RelevanceRule("bolsa", 7, OpportunityCategory.SCHOLARSHIP),
     RelevanceRule("bolsista", 6, OpportunityCategory.SCHOLARSHIP),
     RelevanceRule("projeto", 4, OpportunityCategory.PROJECT),
